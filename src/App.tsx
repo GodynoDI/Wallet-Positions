@@ -5,6 +5,11 @@ import { formatUnits, isAddress, maxUint256, type Address } from "viem";
 import { AAVE_ABI, AAVE_POOL, ERC20_ABI, TOKENS } from "./contracts";
 import { TRANSPORT } from "./config";
 
+const EXAMPLES = [
+  { label: "vitalik.eth", address: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045" },
+  { label: "Binance 14 (exchange)", address: "0x28c6c06298d514db089934071355e5743bf21d60" },
+];
+
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 const fmt = (v: bigint, d: number, max = 4) =>
   Number(formatUnits(v, d)).toLocaleString("en-US", { maximumFractionDigits: max });
@@ -89,6 +94,12 @@ export function App() {
           <label htmlFor="addr">Look up any address</label>
           <input id="addr" value={typed} onChange={(e) => setTyped(e.target.value.trim())} placeholder="0x… (no wallet needed)" spellCheck={false} autoComplete="off" />
           {typed && !isAddress(typed) && <span className="hint">Not a valid address</span>}
+          <div className="chips">
+            <span className="hint-muted">Try:</span>
+            {EXAMPLES.map((e) => (
+              <button key={e.address} type="button" className="chip" onClick={() => setTyped(e.address)}>{e.label}</button>
+            ))}
+          </div>
         </div>
       )}
 
