@@ -6,7 +6,7 @@ import { config } from "./config";
 import { App } from "./App";
 import "./style.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, retryDelay: 400 } } });
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

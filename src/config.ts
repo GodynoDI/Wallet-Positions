@@ -1,4 +1,4 @@
-import { createConfig, http, custom } from "wagmi";
+import { createConfig, http, custom, fallback } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
 
@@ -18,5 +18,13 @@ const walletTransport = custom({
 export const config = createConfig({
   chains: [mainnet],
   connectors: [injected()],
-  transports: { [mainnet.id]: TRANSPORT === "wallet" ? walletTransport : http("https://ethereum-rpc.publicnode.com") },
+  transports: { [mainnet.id]: TRANSPORT === "wallet" ? walletTransport : fallback(
+          [
+            "https://ethereum-rpc.publicnode.com",
+            "https://eth.llamarpc.com",
+            "https://1rpc.io/eth",
+            "https://eth.drpc.org",
+          ].map((url) => http(url, { timeout: 5_000, retryCount: 0 })),
+          { rank: false },
+        ) },
 });

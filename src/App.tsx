@@ -31,7 +31,7 @@ const SAMPLE = {
 
 export function App() {
   const { address: connected, isConnected } = useAccount();
-  const { connect, connectors, error: connectError, isPending } = useConnect();
+  const { connect, connectors, error: connectError, isPending, reset: resetConnect } = useConnect();
   const { disconnect } = useDisconnect();
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
@@ -81,7 +81,13 @@ export function App() {
         )}
       </header>
 
-      {connectError && <p className="note warn" role="alert">{connectError.message.split("\n")[0]}</p>}
+      {connectError && (
+        <p className="note warn" role="alert">
+          {/provider not found/i.test(connectError.message)
+            ? "No browser wallet found. Install one such as MetaMask, or look up any address below."
+            : connectError.message.split("\n")[0]}
+        </p>
+      )}
       {wrongChain && (
         <p className="note warn" role="alert">
           Your wallet is on another network.{" "}
@@ -92,12 +98,12 @@ export function App() {
       {TRANSPORT === "http" && (
         <div className="field">
           <label htmlFor="addr">Look up any address</label>
-          <input id="addr" value={typed} onChange={(e) => setTyped(e.target.value.trim())} placeholder="0x… (no wallet needed)" spellCheck={false} autoComplete="off" />
+          <input id="addr" value={typed} onChange={(e) => { resetConnect(); setTyped(e.target.value.trim()); }} placeholder="0x… (no wallet needed)" spellCheck={false} autoComplete="off" />
           {typed && !isAddress(typed) && <span className="hint">Not a valid address</span>}
           <div className="chips">
             <span className="hint-muted">Try:</span>
             {EXAMPLES.map((e) => (
-              <button key={e.address} type="button" className="chip" onClick={() => setTyped(e.address)}>{e.label}</button>
+              <button key={e.address} type="button" className="chip" onClick={() => { resetConnect(); setTyped(e.address); }}>{e.label}</button>
             ))}
           </div>
         </div>
@@ -125,7 +131,11 @@ export function App() {
       {enabled && (
         <section className="panel" aria-live="polite">
           {loading && <p className="note">Reading chain…</p>}
-          {failed && <p className="note warn">Could not read from the network. Try again in a moment.</p>}
+          {failed && (
+            <p className="note warn">
+              Could not read from the network. <button className="link" onClick={() => { void eth.refetch(); void reads.refetch(); }}>Try again</button>
+            </p>
+          )}
           {!loading && !failed && (
             <>
               <Rows
